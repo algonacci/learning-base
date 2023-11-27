@@ -2721,6 +2721,10 @@ html {
   margin-right: auto;
 }
 
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
 .mt-12 {
   margin-top: 3rem;
 }
@@ -2735,8 +2739,4 @@ html {
 
 .pt-12 {
   padding-top: 3rem;
-}
-
-.filter {
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
