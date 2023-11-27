@@ -11,7 +11,7 @@ export default function Home() {
   ]);
   return (
     <div>
-      <div className="container mx-auto pt-12">
+      <div className="container mx-auto px-12">
         <div className="prose">
           {messages?.map((message, index) => (
             <p key={index}>
@@ -29,6 +29,10 @@ export default function Home() {
               {
                 role: "user",
                 ...(data as { content: string }),
+              },
+              {
+                role: "assistant",
+                content: "",
               },
             ]);
             const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -49,16 +53,37 @@ export default function Home() {
                     ...data,
                   },
                 ],
+                stream: true,
               }),
             });
-            const json = await response.json();
-            setMessages((messages: Messages) => [
-              ...messages,
-              {
-                role: "assistant",
-                content: json.choices[0].message.content,
-              },
-            ]);
+
+            if (!response.body) return;
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let isFinished = false;
+            while (!isFinished) {
+              const { value, done } = await reader.read();
+              isFinished = done;
+
+              const decodedValue = decoder.decode(value);
+              if (!decodedValue) break;
+
+              const messages = decodedValue.split("\n\n");
+              const chunks = messages.filter((msg) => msg && msg !== "data: [DONE]").map((message) => JSON.parse(message.replace(/^data:/g, "").trim()));
+
+              for (const chunk of chunks) {
+                const content = chunk.choices[0].delta.content;
+                if (content) {
+                  setMessages((messages) => [
+                    ...messages.slice(0, messages.length - 1),
+                    {
+                      role: "assistant",
+                      content: `${messages[messages.length - 1].content}${content}`,
+                    },
+                  ]);
+                }
+              }
+            }
           }}
         >
           <div className="form-control">
