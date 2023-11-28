@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 type Messages = { role: "system" | "user" | "assistant"; content: string }[];
 
@@ -9,6 +9,7 @@ export default function Home() {
       content: "You are a helpful assistant.",
     },
   ]);
+  const formRef = useRef<HTMLFormElement | null>(null);
   return (
     <div>
       <div className="container mx-auto px-12">
@@ -20,6 +21,7 @@ export default function Home() {
           ))}
         </div>
         <form
+          ref={formRef}
           onSubmit={async (e) => {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
@@ -35,6 +37,7 @@ export default function Home() {
                 content: "",
               },
             ]);
+            formRef.current?.reset();
             const response = await fetch("https://api.openai.com/v1/chat/completions", {
               method: "POST",
               headers: {
@@ -42,7 +45,8 @@ export default function Home() {
                 Authorization: "Bearer sk-",
               },
               body: JSON.stringify({
-                model: "gpt-3.5-turbo",
+                // model: "gpt-3.5-turbo",
+                model: "ft:gpt-3.5-turbo-0613:braincore::8OPal6oG",
                 messages: [
                   {
                     role: "system",
