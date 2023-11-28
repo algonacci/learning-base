@@ -36,6 +36,7 @@ app.post('/', async (req, res) => {
   const decoder = new TextDecoder()
 
   let isFinished = false
+  const bags: string[] = []
   while (!isFinished) {
     const { value, done } = await reader.read()
     isFinished = done
@@ -43,15 +44,18 @@ app.post('/', async (req, res) => {
     const decodedValue = decoder.decode(value)
     if (!decodedValue) break
 
-    const messages = decodedValue.split('\n\n')
-    const chunks = messages
-      .filter(msg => msg && msg !== 'data: [DONE]')
-      .map(message => JSON.parse(message.replace(/^data:/g, '').trim()))
+    for (const chunk of decodedValue.split('\n\n')) {
+      if (chunk.trim() === 'data: [DONE]') continue
 
-    for (const chunk of chunks) {
-      const content = chunk.choices[0].delta.content
-      if (content) {
-        res.write(content)
+      bags.push(chunk)
+      try {
+        const json = JSON.parse(bags.join('').split('data: ').at(-1) || '{}')
+        const text = json.choices?.[0]?.delta?.content
+        if (text) {
+          res.write(text)
+        }
+      } catch (error) {
+        // ignore
       }
     }
   }
