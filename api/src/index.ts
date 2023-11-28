@@ -7,12 +7,10 @@ app.use(cors())
 
 app.post('/', async (req, res) => {
   const { content } = req.body
-  console.log(content)
-
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'Bearer sk-',
+      Authorization: 'Bearer ',
     },
     method: 'POST',
     body: JSON.stringify({
