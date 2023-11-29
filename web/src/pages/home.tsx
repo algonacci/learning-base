@@ -26,7 +26,7 @@ export default function Home() {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
             const data = Object.fromEntries(formData.entries());
-            setMessages((messages: Messages) => [
+            const payloadMessages = [
               ...messages,
               {
                 role: "user",
@@ -36,27 +36,18 @@ export default function Home() {
                 role: "assistant",
                 content: "",
               },
-            ]);
+            ];
+            setMessages(payloadMessages as Messages);
             formRef.current?.reset();
             const response = await fetch("https://api.openai.com/v1/chat/completions", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: "Bearer sk-",
+                Authorization: "Bearer ",
               },
               body: JSON.stringify({
-                // model: "gpt-3.5-turbo",
-                model: "ft:gpt-3.5-turbo-0613:braincore::8OPal6oG",
-                messages: [
-                  {
-                    role: "system",
-                    content: "You are a helpful assistant.",
-                  },
-                  {
-                    role: "user",
-                    ...data,
-                  },
-                ],
+                model: "gpt-3.5-turbo",
+                messages: payloadMessages.slice(0, payloadMessages.length - 1),
                 stream: true,
               }),
             });
