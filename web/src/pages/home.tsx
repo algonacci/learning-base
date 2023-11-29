@@ -39,16 +39,14 @@ export default function Home() {
             ];
             setMessages(payloadMessages as Messages);
             formRef.current?.reset();
-            const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            const response = await fetch("http://localhost:5000", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: "Bearer ",
+                Authorization: "Bearer secret",
               },
               body: JSON.stringify({
-                model: "gpt-3.5-turbo",
-                messages: payloadMessages.slice(0, payloadMessages.length - 1),
-                stream: true,
+                content: data.content,
               }),
             });
 
@@ -63,21 +61,13 @@ export default function Home() {
               const decodedValue = decoder.decode(value);
               if (!decodedValue) break;
 
-              const messages = decodedValue.split("\n\n");
-              const chunks = messages.filter((msg) => msg && msg !== "data: [DONE]").map((message) => JSON.parse(message.replace(/^data:/g, "").trim()));
-
-              for (const chunk of chunks) {
-                const content = chunk.choices[0].delta.content;
-                if (content) {
-                  setMessages((messages) => [
-                    ...messages.slice(0, messages.length - 1),
-                    {
-                      role: "assistant",
-                      content: `${messages[messages.length - 1].content}${content}`,
-                    },
-                  ]);
-                }
-              }
+              setMessages((messages) => [
+                ...messages.slice(0, messages.length - 1),
+                {
+                  role: "assistant",
+                  content: `${messages[messages.length - 1].content}${decodedValue}`,
+                },
+              ]);
             }
           }}
         >
